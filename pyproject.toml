@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PESlice"
+version = "0.1.0"
+description = "Tools for slicing high-dimensional potential energy surfaces (PES) and computing complexity measures."
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+authors = [
+  { name = "Arun Spencer" },
+  { name = "John Gardner" }
+]
+
+dependencies = [
+  "numpy<2",
+  "scipy",
+  "torch",
+  "ase",
+  "graph-pes",
+  "scikit-learn",
+  "jaxtyping",
+]
+
+[project.urls]
+Repository = "https://github.com/arunspencer/PESlice"

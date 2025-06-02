@@ -4,6 +4,7 @@ import torch
 from graph_pes import GraphPESModel
 from graph_pes.atomic_graph import AtomicGraph, trim_edges
 from graph_pes.data import GraphDataLoader
+from warnings import warn
 
 
 def define_graphs(
@@ -13,11 +14,43 @@ def define_graphs(
     large_cutoff: float = 9.0,
 ) -> list[AtomicGraph]:
     """
-    Creates atomic graphs for each structure using a shared large neighbuor list from
-    the `starting_molecule`, trimming neighbours below `model_cutoff`.
+    Creates trimmed atomic graphs for each structure using a shared large neighbour list
+    
+    Neighbour list calculated from the ``starting_molecule``, which is _similar_ to the structures in ``molecules``
 
-    This avoids recomputing full neighbour lists for each structure.
+    Each structure in ``molecules`` is trimmed to the ``model_cutoff`` distance
+
+    This avoids recomputing full neighbour lists for each structure
+
+    Parameters
+    ----------
+    starting_molecule
+        The reference molecule to define the large neighbour list
+    molecules
+        List of molecules to create atomic graphs for
+    model_cutoff
+        The cutoff radius for trimming edges in the atomic graphs
+    large_cutoff
+        The cutoff radius for the large neighbour list
+
+        Default is 9.0Å
+
+    Returns
+    -------
+    list[AtomicGraph]
+        List of atomic graphs for each molecule in ``molecules``, trimmed to ``model_cutoff``
     """
+    # checks whether the cutoff is larger than the model cutoff
+    if large_cutoff <= model_cutoff:
+        raise ValueError(
+            f"The large cutoff ({large_cutoff}) must be larger than the model cutoff ({model_cutoff})"
+        )
+
+    # warns if large cutoff is not significantly larger than model cutoff
+    if large_cutoff - model_cutoff < 1.5:
+        warn(
+            f"The large cutoff ({large_cutoff}) is not significantly larger than the model cutoff ({model_cutoff}). This may lead to inefficient neighbour list calculations.",
+        )
 
     graph = AtomicGraph.from_ase(starting_molecule, cutoff=large_cutoff)
 
@@ -35,6 +68,21 @@ def define_graphs(
 
 
 def get_nearest_neighbour_distance(atomic_graph: AtomicGraph) -> float:
+    """
+    Calculates the smallest nearest-neighbour distance in an atomic graph
+
+    This is useful for determining the minimum distance between atoms throughout a hyperplane
+
+    Parameters
+    ----------
+    atomic_graph
+        The atomic graph to calculate the nearest-neighbour distance for
+
+    Returns
+    -------
+    float
+        The smallest nearest-neighbour distance in the atomic graph
+    """
     positions = atomic_graph.R  # (num_atoms, 3)
     neighbour_list = atomic_graph.neighbour_list  # (num_edges, 2)
 
@@ -57,7 +105,32 @@ def batch_calculate(
     get_forces: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Calculates the energies and (optionally) forces for each sample point in the hyperplane by parsing atomic graphs to the `graph-pes` GNN model
+    Batch calculates the energies and (optionally) forces for each sample point
+     
+    Parses AtomicGraph objects to ``graph-pes`` GNN models
+
+    Parameters
+    ----------
+    model
+        The GraphPESModel to use for predictions
+    graphs
+        List of AtomicGraph objects to calculate energies and (optionally) forces for
+    batch_size
+        The batch size to use for model predictions
+
+        Default is 10, which is a reasonable size for most models
+    get_forces
+        Whether to calculate forces in addition to energies
+
+        Default is False, which only calculates energies
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray, np.ndarray]
+        Energies, forces, and absolute forces for each sample point
+        - Energies: shape ``(num_points,)``
+        - Forces: shape ``(num_points, num_atoms, 3)`` if get_forces is True
+        - Absolute Forces: shape ``(num_points, num_atoms)`` if get_forces is True
     """
     dataloader = GraphDataLoader(graphs, batch_size=batch_size)
     energies = []

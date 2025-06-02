@@ -32,8 +32,9 @@ def chebyshev_features_1d(
     x: Float[np.ndarray, "N"], n: int
 ) -> Float[np.ndarray, "N n"]:
     """
-    Expand ``x`` of shape ``(N,)`` into ``n`` Chebyshev polynomials,
-    giving a feature matrix of shape ``(N, n)``.
+    Expand ``x`` of shape ``(N,)`` into ``n`` Chebyshev polynomials
+
+    Returns a feature matrix of shape ``(N, n)``.
     """
     assert x.ndim == 1
     features = np.zeros((len(x), n))
@@ -47,10 +48,9 @@ def chebyshev_features(
     X: Float[np.ndarray, "N A"], n: int
 ) -> Float[np.ndarray, "N n**A"]:
     """
-    Expand ``X`` of shape ``(N, A)`` into a basis of ``A``
-    lots of ``(n+1)``-dimensional Chebyshev polynomials.
-    Take the product of these features to get a
-    ``(N, (n+1)**A)``-shaped feature matrix.
+    Expand ``X`` of shape ``(N, A)`` into a basis of ``A`` lots of ``(n+1)``-dimensional Chebyshev polynomials
+    
+    Take the product of these features to get a ``(N, (n+1)**A)``-shaped feature matrix
     """
     assert X.ndim == 2
     if X.shape[-1] == 1:
@@ -64,7 +64,7 @@ def chebyshev_feature_importance(
     dims: int = 1,
 ) -> Float[np.ndarray, "n**dims"]:
     """
-    Compute the "importance" of each feature in the Chebyshev basis.
+    Computes the "importance" of each feature in the Chebyshev basis
     """
     importances = [np.arange(n) + 1 for _ in range(dims)]
     if dims == 1:

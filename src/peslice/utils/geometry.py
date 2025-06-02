@@ -12,24 +12,30 @@ def check_orthogonal(*args, function_dim) -> bool:
 
     Vectors parsed to this function must be contain sub-vectors of length 3 (x, y, z)
 
-    The respective sub-vectors between each vector are checked for orthogonality
+    Orthogonality of the sub-vectors are checked
 
     Parameters
     ----------
     *args
-        n vectors to check
+        n vectors to check sub-vector orthogonality
 
-        Shape `(1, function_dim)`
+        Shape ``(function_dim, )``
 
     Returns
     -------
-    Whether the vectors are all othogonal
+    Whether the sub-vectors are all orthogonal
 
     Raises
     ------
     ValueError
-        If all of the parsed vectors are not the same shape
+        If all of the parsed vectors are not equal to the function dimension
+
+        If the function dimension cannot be split into Cartesian sub-vectors of length 3
     """
+    if function_dim % 3 != 0:
+        raise ValueError(
+            "The function dimension must be a multiple of 3 to form Cartesian sub-vectors"
+        )
     for vec in args:
         if len(vec) != function_dim:
             raise ValueError(
@@ -62,36 +68,43 @@ def gen_random_slice(
     seed: int,
 ) -> Float[np.ndarray, "slice_dim function_dim"]:
     """
-    Generates a random slice in `slice_dim` dimensions.
+    Generates a random slice (hyperplane) in 1-, 2-, or 3-dimensions
 
-    The overall dimension is the length of the `m0` vector
+    The overall dimension is the length of the ``m0`` vector
 
     Parameters
     ----------
     m0
         A point on the hyperplane
 
-        Shape `(function_dim, )`
+        Shape ``(function_dim, )``
     slice_dim
         The dimension of the hyperplane
     seed
-        The seed for the random generation of slices
+        The seed for random number generation
+
+    Returns
+    -------
+    orthogonal_basis
+        A random orthogonal basis for the hyperplane
+
+        Shape ``(slice_dim, function_dim)``
 
     Raises
     ------
     ValueError
         If the slice dimension is greater than the function dimension or is < 1
 
-        If slice_dim is outside of the range [1, 3]
+        If slice_dim is not 1, 2, or 3
     """
 
     rng = np.random.default_rng(seed)
 
     function_dim = len(m0)
 
-    # checking that the slice dimension is in the range [1, function_dim]
+    # checking that the slice dimension is in [1, 2, 3]
     if slice_dim > 3 or slice_dim < 1:
-        raise ValueError("Slice dimension must be in range [1, 3]")
+        raise ValueError("Slice dimension must be 1, 2, or 3")
 
     # generating random basis vectors, ensuring they are orthogonal
     orthogonal_basis = np.zeros((slice_dim, function_dim))
@@ -119,5 +132,18 @@ def gen_random_slice(
 
 
 def normalised(x: torch.Tensor) -> torch.Tensor:
+    """
+    Normalises each row vector of the input tensor
+
+    Parameters
+    ----------
+    x
+        The input tensor to normalise
+
+    Returns
+    -------
+    torch.Tensor
+        The normalised tensor
+    """
     norm = x.norm(dim=1, keepdim=True)
     return torch.where(norm > 0, x / norm, torch.zeros_like(x))

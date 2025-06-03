@@ -90,7 +90,9 @@ class LinearSlicePES(BaseSlicePES):
     slice_structures
         The ``ase.Atoms`` objects for each sample point along the hyperplane
     nn_neighbour_distances
-        The nearest nearest neighbour distance for each sample point along the hyperplane
+        The smallest nearest neighbour distance for each sample point along the hyperplane
+    persistent_info
+        Whether to keep ``ase.Atoms.info`` attributes for each sample point along the hyperplane
     Methods
     -------
     def_slice
@@ -98,7 +100,7 @@ class LinearSlicePES(BaseSlicePES):
     def_rslice
         Defines a random hyperplane in ``slice_dim``-dimensions
     gp_eval
-        Evaluates the function at the sample points in the hyperplane using a parsed ``graph-pes`` many-body model
+        Evaluates the energy and (optionally) forces of the ``ase.Atoms`` objects at each sample point on the hyperplane using a parsed ``graph-pes`` NN model
     """
 
     def __init__(
@@ -107,11 +109,13 @@ class LinearSlicePES(BaseSlicePES):
         point_density: int = 100,
         cheb_alpha: float = 0.0005,
         get_nn_distances: bool = False,
+        persistent_info: bool = True,
     ):
         super().__init__(structure=structure, cheb_alpha=cheb_alpha)
         self.point_density = point_density
         self.get_nn_distances = get_nn_distances
         self._get_forces = False
+        self.persistent_info = persistent_info
 
     def def_slice(
         self,
@@ -367,16 +371,29 @@ class LinearSlicePES(BaseSlicePES):
                 axis=0,
             )
 
-            molecules.append(
-                ase.Atoms(
-                    symbols=symbols,
-                    positions=new_atomic_positions.reshape(
-                        structure.positions.shape
-                    ),
-                    pbc=structure.pbc,
-                    cell=structure.cell,
+            if self.persistent_info:
+                molecules.append(
+                    ase.Atoms(
+                        symbols=symbols,
+                        positions=new_atomic_positions.reshape(
+                            structure.positions.shape
+                        ),
+                        pbc=structure.pbc,
+                        cell=structure.cell,
+                        info=structure.info,
+                    )
                 )
-            )
+            else:
+                molecules.append(
+                    ase.Atoms(
+                        symbols=symbols,
+                        positions=new_atomic_positions.reshape(
+                            structure.positions.shape
+                        ),
+                        pbc=structure.pbc,
+                        cell=structure.cell,
+                    )
+                )
 
         return molecules
 

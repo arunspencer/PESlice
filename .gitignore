@@ -1,0 +1,4 @@
+.conda
+**/__pycache__/
+*.egg-info
+.vscode/

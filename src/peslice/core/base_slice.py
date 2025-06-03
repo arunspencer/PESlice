@@ -126,7 +126,7 @@ class BaseSlicePES(ABC):
             raise ValueError("Slice must be defined and evaluated before complexity can be calculated")
 
         model = ChebyshevModel(alpha=self._cheb_alpha)
-        model.fit(self._cheb_input(), self.energies - self.energies.mean())
+        model.fit(self._cheb_input(), self.energies)
         self.cheb_score = model.score(self._cheb_input(), self.energies)
         return model.complexity
 
@@ -135,4 +135,4 @@ class BaseSlicePES(ABC):
         if not self._defined or not self._evaluated:
             raise ValueError("Slice must be defined and evaluated before complexity can be calculated")
 
-        return mac_complexity(self.energies, dx=self._mac_dx(), normalise=True)
+        return mac_complexity(self.energies, dx=self._mac_dx(), normalise=False)

@@ -4,8 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PESlice"
-version = "0.1.0"
-description = "Tools for slicing high-dimensional potential energy surfaces (PES) and computing complexity measures."
+version = "0.1.1"
+readme = { file = "README.md", }
+description = "Slice high-dimensional PES, evaluate with NN models, and analyse function complexities."
 requires-python = ">=3.9"
 license = { text = "MIT" }
 

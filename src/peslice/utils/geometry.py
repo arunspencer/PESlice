@@ -8,8 +8,6 @@ from jaxtyping import Float
 
 def check_orthogonal(*args, function_dim) -> bool:
     """
-    Checks whether all parsed vectors are orthogonal
-
     Vectors parsed to this function must be contain sub-vectors of length 3 (x, y, z)
 
     Orthogonality of the sub-vectors are checked

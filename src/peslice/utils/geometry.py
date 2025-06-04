@@ -45,19 +45,21 @@ def check_orthogonal(*args, function_dim) -> bool:
 
     A = [np.zeros((len(args), 3)) for _ in range(int(function_dim / 3))]
 
+    # create arrays of sub-vectors
     for i, vec in enumerate(args):
         for j, row in enumerate(vec.reshape(-1, 3)):
-            A[i][j, :] = row
+            A[j][i, :] = row
 
+    # check orthogonality of the sub-vectors - off diagonal elements must be zero
     for a in A:
         dot_product_matrix = np.dot(a, a.T)
 
-        if not np.allclose(
+        if np.allclose(
             dot_product_matrix, np.diag(np.diagonal(dot_product_matrix))
         ):
-            return False
+            return True
 
-    return True
+    return False
 
 
 def gen_random_slice(

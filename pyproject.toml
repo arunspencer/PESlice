@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "PESlice"
 version = "0.1.2"
-readme = { file = "README.md", }
+readme = { file = "README.md", content-type = "text/markdown" }
 description = "Slice high-dimensional PES, evaluate with NN models, and analyse function complexities."
 requires-python = ">=3.9"
 license = { text = "MIT" }
